@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.env
+*.wav
+*.mp3
+*.m4a
+*.flac
+*.ogg
+*.log
+celerybeat-schedule*

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Audio Transcription</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%234f46e5' d='M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z"/></svg>
+      <div>
+        <h1>Audio Transcription</h1>
+        <p>Whisper speech-to-text with per-segment timestamps</p>
+      </div>
+    </div>
+    <span class="health" id="health" data-state="unknown"><span class="dot"></span><span id="health-text">Checking service…</span></span>
+  </header>
+
+  <main>
+    <section class="card" aria-labelledby="key-label">
+      <label for="api-key" id="key-label" class="label">API key</label>
+      <div class="key-row">
+        <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste the value of API_KEY">
+        <button type="button" class="ghost" id="toggle-key" aria-pressed="false">Show</button>
+      </div>
+      <p class="hint">Sent in the <code>X-API-Key</code> header. Kept only for this browser tab.</p>
+    </section>
+
+    <section class="card" aria-labelledby="upload-title">
+      <h2 id="upload-title" class="label">Audio file</h2>
+      <label class="drop" id="drop">
+        <input id="file" type="file" accept=".wav,.mp3,.m4a,.flac,.ogg,audio/*">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 16V7.83l-3.59 3.58L6 10l6-6 6 6-1.41 1.41L13 7.83V16h-2Zm-6 4v-2h14v2H5Z"/></svg>
+        <span class="drop-main" id="drop-main">Drop an audio file here or <u>browse</u></span>
+        <span class="drop-sub" id="drop-sub">WAV, MP3, M4A, FLAC or OGG</span>
+      </label>
+      <div class="actions">
+        <button type="button" class="primary" id="submit" disabled>Transcribe</button>
+        <button type="button" class="ghost" id="reset" hidden>New file</button>
+      </div>
+    </section>
+
+    <section class="card" id="job" hidden aria-labelledby="job-title">
+      <div class="job-head">
+        <h2 id="job-title" class="label">Job</h2>
+        <code class="job-id" id="job-id"></code>
+      </div>
+      <ol class="steps" id="steps">
+        <li data-step="upload">Upload</li>
+        <li data-step="queued">Queued</li>
+        <li data-step="processing">Transcribing</li>
+        <li data-step="completed">Done</li>
+      </ol>
+      <div class="bar" id="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-labelledby="status-text"><span id="bar-fill"></span></div>
+      <p class="status" id="status-text" aria-live="polite"></p>
+    </section>
+
+    <p class="error" id="error" role="alert" hidden></p>
+
+    <section class="card" id="result" hidden aria-labelledby="result-title">
+      <div class="result-head">
+        <div>
+          <h2 id="result-title" class="label">Transcript</h2>
+          <p class="meta" id="meta"></p>
+        </div>
+        <div class="tools">
+          <button type="button" class="ghost" id="copy">Copy text</button>
+          <button type="button" class="ghost" id="download-srt">SRT</button>
+          <button type="button" class="ghost" id="download-json">JSON</button>
+        </div>
+      </div>
+      <audio id="player" controls preload="metadata"></audio>
+      <ol class="segments" id="segments"></ol>
+    </section>
+  </main>
+
+  <footer>
+    <a href="/docs">API docs</a>
+  </footer>
+</body>
+</html>

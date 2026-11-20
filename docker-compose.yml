@@ -1,0 +1,57 @@
+x-app: &app
+  build: .
+  image: audio-transcription-pipeline:latest
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    REDIS_URL: redis://redis:6379/0
+    UPLOAD_DIR: /data/uploads
+  volumes:
+    - uploads:/data/uploads
+  depends_on:
+    redis:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    # Published on localhost only, for running the API/worker outside Docker.
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    <<: *app
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      UPLOAD_DIR: /data/uploads
+      API_KEY: ${API_KEY:-}  # required; the API refuses to start without it
+    # Localhost only by default. Set API_BIND=0.0.0.0 to let other devices on your
+    # network open the API and web UI (Redis stays on localhost either way).
+    ports:
+      - "${API_BIND:-127.0.0.1}:${API_PORT:-8000}:8000"
+
+  worker:
+    <<: *app
+    command: >
+      celery -A app.tasks.celery_app worker --loglevel=info
+      --concurrency=${WORKER_CONCURRENCY:-1}
+      --beat --schedule /tmp/celerybeat-schedule
+    volumes:
+      - uploads:/data/uploads
+      - whisper-cache:/home/app/.cache/whisper
+
+volumes:
+  redis-data:
+  uploads:
+  whisper-cache:
